@@ -19,29 +19,30 @@ namespace ApplesGame
 		DefineScreenPart(apple);
 	}
 
-	void InitApples(Apple* apples, const Game& game)
+	void InitApples(std::vector<Apple>& apples, const Game& game)
 	{
-		for (Apple* ptr = apples; ptr < apples + game.applesCount; ptr++)
+		for (int i = 0; i < game.applesCount; i++)
 		{
-			ptr->position = GenerateApplePosition();
-			AppleInit(ptr, game);
+			apples.emplace_back();
+			apples[i].position = GenerateApplePosition();
+			AppleInit(&apples[i], game);
 		}
 	}
 
-	bool IsApplePosition(Apple* apples, float positionX, float positionY, int applesCount)
+	bool IsApplePosition(std::vector<Apple> apples, float positionX, float positionY, int applesCount)
 	{
 		float appleStartX = 0.f;
 		float appleEndX = 0.f;
 		float appleStartY = 0.f;
 		float appleEndY = 0.f;
 
-		for (Apple* ptr = apples; ptr < apples + applesCount; ptr++)
+		for (int i = 0; i < applesCount; i++)
 		{
-			appleStartX = ptr->shape.getPosition().x - APPLE_SIZE / 2.f;
-			appleEndX = ptr->shape.getPosition().x + APPLE_SIZE / 2.f;
+			appleStartX = apples[i].shape.getPosition().x - APPLE_SIZE / 2.f;
+			appleEndX = apples[i].shape.getPosition().x + APPLE_SIZE / 2.f;
 
-			appleStartY = ptr->shape.getPosition().y - APPLE_SIZE / 2.f;
-			appleEndY = ptr->shape.getPosition().y + APPLE_SIZE / 2.f;
+			appleStartY = apples[i].shape.getPosition().y - APPLE_SIZE / 2.f;
+			appleEndY = apples[i].shape.getPosition().y + APPLE_SIZE / 2.f;
 
 			if (positionX >= appleStartX && positionX <= appleEndX + STONE_WIDTH_MAX)
 			{

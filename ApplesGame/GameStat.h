@@ -59,7 +59,7 @@ namespace ApplesGame
 
 	struct GameStat
 	{
-		PlayerStat* playerStats;
+		std::vector<PlayerStat> playerStats;
 		PlayerStat* player = nullptr;
 
 		bool isTableShow = false;
@@ -73,11 +73,13 @@ namespace ApplesGame
 
 		GameStat()
 		{
-			playerStats = new PlayerStat[playersCount];
+			playerStats.reserve(playersCount);
 
 			//Иммитация игроков, сам игрок попадает в таблицу позднее. Оставляем под него ячейку
-			for (auto ptr = playerStats; ptr < playerStats + (playersCount - 1); ptr++)
+			for (int i = 0; i < playersCount - 1; i++)
 			{
+				playerStats.emplace_back();
+
 				auto rnd = MIN_PLAYER_COUNT + rand() % ((MAX_PLAYER_COUNT - 1) - MIN_PLAYER_COUNT + 1);
 				std::string rndName;
 
@@ -92,17 +94,14 @@ namespace ApplesGame
 
 				auto rndScore = 1 + rand() % (10 - 1 + 1);
 
-				ptr->playerName = InitText(rndName, sf::Color::White, ptr->font, 35);
-				ptr->playerScore = InitText(std::to_string(rndScore), sf::Color::White, ptr->font, 35);
-				ptr->textColor = sf::Color::White;
+				playerStats[i].playerName = InitText(rndName, sf::Color::White, playerStats[i].font, 35);
+				playerStats[i].playerScore = InitText(std::to_string(rndScore), sf::Color::White, playerStats[i].font, 35);
+				playerStats[i].textColor = sf::Color::White;
 			}
 
+			//Костыль по добавлению обьекта самого игрока в массив
+			playerStats.emplace_back();
 			GenerateTable(this);
-		}
-
-		~GameStat() 
-		{
-			delete[] playerStats;
 		}
 	};
 
@@ -115,9 +114,9 @@ namespace ApplesGame
 	void InitGameStat(GameStat* gameStat, std::string playerName, std::string playerScore, sf::RenderWindow& window);
 	void DrawGameStat(GameStat* gameStat, sf::RenderWindow& window);
 	void SortPlayerStats(GameStat* gameStat);
-	void Merge(PlayerStat arr[], int left, int mid, int right);
-	void MergeSort(PlayerStat arr[], int left, int right, GameStat* gameStat);
+	void Merge(std::vector<PlayerStat>& arr, int left, int mid, int right);
+	void MergeSort(std::vector<PlayerStat>& arr, int left, int right, GameStat* gameStat);
 	void UpdatePlayer(GameStat* gameStat, int score);
 	void DropTable(GameStat* gameStat);
-	void BubbleSort(PlayerStat* players, int n);
+	void BubbleSort(std::vector<PlayerStat>& players, int n);
 }

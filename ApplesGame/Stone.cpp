@@ -3,15 +3,16 @@
 
 namespace ApplesGame
 {
-	void InitStones(Stone stones[STONE_COUNT], Apple apples[APPLES_COUNT], const Game& game)
+	void InitStones(std::vector<Stone>& stones, std::vector<Apple> apples, const Game& game)
 	{
 		for (int i = 0; i < STONE_COUNT; i++)
 		{
+			stones.emplace_back();
 			InitStone(apples, stones[i], game);
 		}
 	}
 
-	void InitStone(Apple apples[APPLES_COUNT], Stone& stone, const Game& game)
+	void InitStone(std::vector<Apple> apples, Stone& stone, const Game& game)
 	{
 		sf::RectangleShape shape;
 
@@ -44,7 +45,7 @@ namespace ApplesGame
 		stone.shape.setSize({ width - 5.f, height - 5.f });
 	}
 
-	bool IsStoneTouched(sf::RectangleShape player, Stone stones[STONE_COUNT])
+	bool IsStoneTouched(sf::RectangleShape player, std::vector<Stone> stones)
 	{
 		for (int i = 0; i < STONE_COUNT; i++)
 		{

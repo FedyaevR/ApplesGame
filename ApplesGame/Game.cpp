@@ -61,9 +61,9 @@ namespace ApplesGame
 
 		window.draw(game.score);
 		
-		for (Apple* ptr = game.apples; ptr < game.apples + game.applesCount; ptr++)
-		{
-			AppleDraw(ptr, window);
+		for(int i = 0; i < game.applesCount; i++)
+		{ 
+			AppleDraw(&game.apples[i], window);
 		}
 
 		for (int i = 0; i < STONE_COUNT; i++)
@@ -169,14 +169,14 @@ namespace ApplesGame
 
 	void AppleEat(Game& game, sf::RenderWindow& window)
 	{
-		for (Apple* apple = game.apples; apple < game.apples + game.applesCount; apple++)
-		{
-			if (apple->screenPart != game.player.screenPart)
+		for (int i = 0; i < game.applesCount; i++)
+		{ 
+			if (game.apples[i].screenPart != game.player.screenPart)
 			{
 				continue;
 			}
 
-			float squareDistance = (game.player.position.x - apple->position.x) * (game.player.position.x - apple->position.x) + (game.player.position.y - apple->position.y) * (game.player.position.y - apple->position.y);
+			float squareDistance = (game.player.position.x - game.apples[i].position.x) * (game.player.position.x - game.apples[i].position.x) + (game.player.position.y - game.apples[i].position.y) * (game.player.position.y - game.apples[i].position.y);
 			float squareRadiusSum = (APPLE_SIZE + PLAYER_SIZE) * (APPLE_SIZE + PLAYER_SIZE) / 4;
 
 			if (squareDistance <= squareRadiusSum)
@@ -191,13 +191,13 @@ namespace ApplesGame
 
 				if (game.gameSettings.isEndedApplesTurned == false)
 				{
-					apple->position = GenerateApplePosition();
-					AppleInit(apple, game);
+					game.apples[i].position = GenerateApplePosition();
+					AppleInit(&game.apples[i], game);
 				}
 				else 
 				{
-					apple->position.x = -100000.f;
-					apple->position.y = -100000.f;
+					game.apples[i].position.x = -100000.f;
+					game.apples[i].position.y = -100000.f;
 					if (game.appleEatenCount == game.applesCount)
 					{
 						RestartSettings(game);

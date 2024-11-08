@@ -21,9 +21,9 @@ namespace ApplesGame
 
 	void AppleInit(Apple* apple, const Game& game);
 
-	void InitApples(Apple* apples, const Game& game);
+	void InitApples(std::vector<Apple>& apples, const Game& game);
 
-	bool IsApplePosition(Apple* apples, float positionX, float positionY, int applesCount);
+	bool IsApplePosition(std::vector<Apple> apples, float positionX, float positionY, int applesCount);
 
 	Position2D GenerateApplePosition();
 

@@ -4,13 +4,13 @@ namespace ApplesGame
 {
 	void RandomPlayersFill(GameStat* gameStat)
 	{
-		for (auto ptr = gameStat->playerStats; ptr < gameStat->playerStats + gameStat->playersCount; ptr++)
+		for (int i = 0; i < gameStat->playersCount; i++)
 		{
 			std::string playerScore = std::to_string(GenerateScore());
 			std::string playerName = GenerateName(gameStat);
 			PlayerStat player(playerName, playerScore, sf::Color::White);
 
-			ptr = &player;
+			gameStat->playerStats[i] = player;
 		}
 	}
 
@@ -55,11 +55,10 @@ namespace ApplesGame
 		gameStat->table.lastElementX = SCREEN_WIDTH / 2.5f;
 		gameStat->table.lastElementY = 55.f;
 
-		int i = 0;
-		for (auto ptr = gameStat->playerStats; ptr < gameStat->playerStats + gameStat->playersCount; ptr++, i++)
+		for (int i = 0; i < gameStat->playersCount; i++)
 		{
-			auto name = std::to_string(ptr->playerIndex + 1) + ". " + ptr->playerName.getString();
-			gameStat->table.players[i] = InitText(name, ptr->playerScore.getString(), ptr->textColor, ptr->font, 20);
+			auto name = std::to_string(gameStat->playerStats[i].playerIndex + 1) + ". " + gameStat->playerStats[i].playerName.getString();
+			gameStat->table.players[i] = InitText(name, gameStat->playerStats[i].playerScore.getString(), gameStat->playerStats[i].textColor, gameStat->playerStats[i].font, 20);
 			gameStat->table.lastElementY = gameStat->table.lastElementY + gameStat->table.marginTop;
 			gameStat->table.players[i].setPosition(gameStat->table.lastElementX, gameStat->table.lastElementY);
 		}
@@ -124,7 +123,7 @@ namespace ApplesGame
 		}
 	}
 
-	void Merge(PlayerStat* players, int left, int mid, int right)
+	void Merge(std::vector<PlayerStat>& players, int left, int mid, int right)
 	{
 		int number1 = mid - left + 1;
 		int number2 = right - mid;
@@ -181,7 +180,7 @@ namespace ApplesGame
 		}
 	}
 
-	void MergeSort(PlayerStat* players, int left, int right, GameStat* gameStat)
+	void MergeSort(std::vector<PlayerStat>& players, int left, int right, GameStat* gameStat)
 	{
 		if (left < right) 
 		{
@@ -197,14 +196,10 @@ namespace ApplesGame
 		for (int i = left; i <= right; ++i)
 		{
 			players[i].playerIndex = i; // Устанавливаем playerIndex
-			//if (gameStat->player->playerName.getString() == players[i].playerName.getString())
-			//{
-			//	gameStat->player = &players[i];
-			//}
 		}
 	}
 
-	void BubbleSort(PlayerStat* players, int n) 
+	void BubbleSort(std::vector<PlayerStat>& players, int n)
 	{
 		bool swapped;
 		for (int i = 0; i < n - 1; i++) 
@@ -236,7 +231,6 @@ namespace ApplesGame
 		PlayerStat* player = gameStat->player;
 		//player->playerName = InitText(player->playerName.getString(), player->textColor, player->font, 35);
 		player->playerScore = InitText(std::to_string(score), player->textColor, player->font, 35);
-		GenerateTable(gameStat);
 		SortPlayerStats(gameStat);
 
 		GenerateTable(gameStat);

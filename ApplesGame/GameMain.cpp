@@ -61,7 +61,5 @@ int main()
 		}
 	}
 
-	delete[] game.apples;
-
 	return 0;
 }

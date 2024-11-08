@@ -47,10 +47,10 @@ namespace ApplesGame
 
 		int appleEatenCount = 0;
 
-		Apple* apples;
+		std::vector<Apple> apples;
 		int applesCount;
 
-		Stone stones[STONE_COUNT];
+		std::vector<Stone> stones;
 
 		sf::Font font;
 
@@ -75,12 +75,12 @@ namespace ApplesGame
 			font.loadFromFile("konstantinopel.ttf");
 			score = InitScore(font);
 
-
-			//яблоко сгенерил, теперь надо коллизию включить и разобратьс€ с камн€ми
 			applesCount = GenerateApplesCount();
-			apples = new Apple[applesCount];
+			apples.reserve(applesCount);
 
-			InitApples(apples,*this);
+			InitApples(apples, *this);
+
+			stones.reserve(STONE_COUNT);
 			InitStones(stones, apples, *this);
 		}
 	};

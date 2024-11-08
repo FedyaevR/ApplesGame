@@ -16,11 +16,11 @@ namespace ApplesGame
 	
 	struct Game;
 
-	void InitStones(Stone stones[STONE_COUNT], Apple apples[APPLES_COUNT], const Game& game);
+	void InitStones(std::vector<Stone>& stones, std::vector<Apple> apples, const Game& game);
 
-	void InitStone(Apple apples[APPLES_COUNT], Stone& stone, const Game& game);
+	void InitStone(std::vector<Apple> apples, Stone& stone, const Game& game);
 
-	bool IsStoneTouched(sf::RectangleShape player, Stone stones[STONE_COUNT]);
+	bool IsStoneTouched(sf::RectangleShape player, std::vector<Stone> stones);
 
 	void StoneDraw(Stone& stone, sf::RenderWindow& window);
 }
