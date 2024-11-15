@@ -62,7 +62,8 @@ namespace ApplesGame
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
 		{
-			game.gameSettings.isGameStart = true;
+			game.gameStates.emplace_back();
+			game.gameStates.back() = GameState::Playing;
 		}
 
 		switch (input) 
@@ -102,7 +103,6 @@ namespace ApplesGame
 
 	void RestartSettings(Game& game)
 	{
-		game.gameSettings.isGameStart = false;
 		game.gameSettings.startSelectMode = 0;
 		game.gameSettings.selectModes = &game.gameSettings.startSelectMode;
 	}

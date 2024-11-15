@@ -38,26 +38,31 @@ int main()
 
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 			{
-				window.close();
+				game.gameStates.emplace_back();
+				game.gameStates.back() = GameState::EscapeDialogMenu;
 			}
 
 		}
 
-		if (game.gameStat.isTableShow)
+		if (game.gameStates.back() == GameState::GameStatTableShow)
 		{
-			DrawGameStat(&game.gameStat, window);
-			
+			DrawGameStat(&game.gameStat, window, game);
+
 		}
-		else if (game.gameSettings.isGameStart == false)
+		else if (game.gameStates.back() == GameState::None)
 		{
 			SetupGameMode(game, window);
 			InitPlayer(game.player, game);
 			InitGameStat(&game.gameStat, "Real player", game.score.getString(), window);
 		}
-		else 
+		else if(game.gameStates.back() == GameState::Playing)
 		{
 			GameUpdate(game, deltaTime, window);
 			GameDraw(game, window);
+		}
+		else if (game.gameStates.back() == GameState::EscapeDialogMenu)
+		{
+			Exit(game, window);
 		}
 	}
 

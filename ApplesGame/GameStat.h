@@ -12,6 +12,8 @@ namespace ApplesGame
 	void GenerateTable(GameStat* gameStat);
 	sf::Text InitText(const std::string& text, sf::Color color, const sf::Font& font, int fontSize);
 	sf::Text InitText(const std::string& text, const std::string& score, sf::Color color, const sf::Font& font, int fontSize);
+	
+	struct Game;
 
 	struct Table
 	{
@@ -62,7 +64,6 @@ namespace ApplesGame
 		std::vector<PlayerStat> playerStats;
 		PlayerStat* player = nullptr;
 
-		bool isTableShow = false;
 		bool isFirst = true;
 		int playersCount = MIN_PLAYER_COUNT + rand() % (MAX_PLAYER_COUNT - MIN_PLAYER_COUNT + 1) + 1;
 
@@ -112,7 +113,7 @@ namespace ApplesGame
 	void AddPlayer(GameStat* gameStat, std::string score = "", std::string playerName = "");
 	void AddPlayerToTable(GameStat* gameStat);
 	void InitGameStat(GameStat* gameStat, std::string playerName, std::string playerScore, sf::RenderWindow& window);
-	void DrawGameStat(GameStat* gameStat, sf::RenderWindow& window);
+	void DrawGameStat(GameStat* gameStat, sf::RenderWindow& window, Game& game);
 	void SortPlayerStats(GameStat* gameStat);
 	void Merge(std::vector<PlayerStat>& arr, int left, int mid, int right);
 	void MergeSort(std::vector<PlayerStat>& arr, int left, int right, GameStat* gameStat);

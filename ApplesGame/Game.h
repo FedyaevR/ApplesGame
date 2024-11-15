@@ -25,6 +25,14 @@ namespace ApplesGame
 		RightBottom
 	};
 
+	enum class GameState
+	{
+		None = 0,
+		Playing,
+		GameStatTableShow,
+		EscapeDialogMenu
+	};
+
 	struct Game
 	{
 		Player player;
@@ -32,6 +40,7 @@ namespace ApplesGame
 		GameModes gameModes;
 		GameSettings gameSettings;
 		GameStat gameStat;
+		std::vector<GameState> gameStates;
 
 
 		sf::Texture playerTexture;
@@ -59,6 +68,8 @@ namespace ApplesGame
 
 		Game()
 		{
+			gameStates.emplace_back();
+
 			assert(playerTexture.loadFromFile(RESOURCES_PATH + "\Player.png"));
 			assert(appleTexture.loadFromFile(RESOURCES_PATH + "\Apple.png"));
 			assert(stoneTexture.loadFromFile(RESOURCES_PATH + "\Rock.png"));
@@ -97,4 +108,6 @@ namespace ApplesGame
 
 	void AppleEat(Game& game, sf::RenderWindow& window);
 	void StoneCheck(Game& game, sf::RenderWindow& window);
+	sf::Text ShowEscapeText(const sf::Font& font, Game& game);
+	void Exit(Game& game, sf::RenderWindow& window);
 }

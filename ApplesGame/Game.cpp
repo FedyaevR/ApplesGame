@@ -84,9 +84,10 @@ namespace ApplesGame
 		sf::sleep(sf::seconds(1.0f));
 		text.setString("");
 
-		game.gameStat.isTableShow = true;
+		game.gameStates.emplace_back();
+		game.gameStates.back() = GameState::GameStatTableShow;
+
 		UpdatePlayer(&game.gameStat, game.appleEatenCount);
-		//InitGameStat(&game.gameStat, "Real player", game.score.getString(), window);
 	}
 
 	sf::Text InitScore(const sf::Font& font)
@@ -128,6 +129,37 @@ namespace ApplesGame
 		text.setString("YOU WIN!");
 
 		return text;
+	}
+
+	sf::Text ShowEscapeText(const sf::Font& font, Game& game)
+	{
+		sf::Text text;
+		text.setFont(font);
+		text.setFillColor(sf::Color::White);
+		text.setCharacterSize(45);
+
+		text.setPosition(SCREEN_WIDTH / 4.f, SCREEN_HEIGHT / 3.f);
+		text.setString("You want to exit?\n\tYes = 1\tNo = 2");
+
+		return text;
+	}
+
+	void Exit(Game& game, sf::RenderWindow& window)
+	{
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+		{
+			window.close();
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+		{
+			game.gameStates.pop_back();
+		}
+
+		sf::Text text = ShowEscapeText(game.font, game);
+		window.clear();
+		window.draw(text);
+
+		window.display();
 	}
 
 	bool IsScreenBorder(Game& game, sf::RenderWindow& window, float deltaTime, PlayerDirection direction)

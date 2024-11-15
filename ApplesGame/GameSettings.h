@@ -36,7 +36,6 @@ namespace ApplesGame
 		int startSelectMode = 0;
 		bool isAccelerationTurned = false;
 		bool isEndedApplesTurned = false;
-		bool isGameStart = false;
 
 		GameSettings()
 		{

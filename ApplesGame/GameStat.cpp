@@ -1,3 +1,4 @@
+#include "Game.h"
 #include "GameStat.h"
 
 namespace ApplesGame
@@ -91,13 +92,12 @@ namespace ApplesGame
 
 	void InitGameStat(GameStat* gameStat, std::string playerName, std::string playerScore, sf::RenderWindow& window)
 	{
-
 		AddPlayer(gameStat, playerScore, playerName);
 		SortPlayerStats(gameStat);
 		GenerateTable(gameStat);
 	}
 
-	void DrawGameStat(GameStat* gameStat, sf::RenderWindow& window)
+	void DrawGameStat(GameStat* gameStat, sf::RenderWindow& window, Game& game)
 	{
 		auto players = gameStat->table.players;
 		window.clear();
@@ -119,7 +119,7 @@ namespace ApplesGame
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
 		{
-			gameStat->isTableShow = false;
+			game.gameStates.pop_back();
 		}
 	}
 
@@ -196,6 +196,12 @@ namespace ApplesGame
 		for (int i = left; i <= right; ++i)
 		{
 			players[i].playerIndex = i; // Устанавливаем playerIndex
+
+			// Проверяем, является ли текущий игрок тем же самым, который хранится в gameStat->player
+			if (gameStat->player && gameStat->player->playerName.getString() == players[i].playerName.getString())
+			{
+				gameStat->player = &players[i]; // Обновляем указатель
+			}
 		}
 	}
 
