@@ -27,7 +27,7 @@ namespace ApplesGame
 
 	enum class GameState
 	{
-		None = 0,
+		MainMenu = 0,
 		Playing,
 		GameStatTableShow,
 		EscapeDialogMenu

@@ -28,11 +28,29 @@ namespace ApplesGame
 
 	typedef Vector2D Position2D;
 	enum class PlayerDirection: int;
+	sf::Vector2f GetItemOrigin(const sf::Sprite& sprite, const Vector2D& relativePosition);
+	sf::Vector2f GetItemOrigin(const sf::Text& text, const sf::Vector2f& relativePosition);
 
+
+	enum class Orientation
+	{
+		Horizontal,
+		Vertical
+	};
+
+	enum class Alignment
+	{
+		Min,
+		Middle,
+		Max
+	};
+
+	void DrawItemsList(sf::RenderWindow& window, const std::vector<sf::Text*>& items, float spacing, Orientation orientation, Alignment alignment, const sf::Vector2f& position, const sf::Vector2f& origin);
 	void SetSpriteSize(sf::Sprite& sprite, float desiredWIdth, float desiredHeight);
 	void SetSpriteRelativeOrigin(sf::Sprite& sprite, float originX, float originY);
 	void RotateSprite(sf::Sprite& sprite, PlayerDirection direction);
 	void DefineScreenPart(Player& player);
 	void DefineScreenPart(Apple* apple);
 	int CheckYPosition(float y);
+	sf::Vector2f GetTextOrigin(const sf::Text& text, const Vector2D& relativePosition);
 }

@@ -5,6 +5,7 @@
 #include <SFML/Audio.hpp>
 #include "GameSettings.h"
 #include "Game.h"
+#include "GameStateMainMenu.h"
 
 using namespace ApplesGame;
 
@@ -16,6 +17,7 @@ int main()
 	srand(seed);
 
 	Game game;
+	GameStateMainMenuData gameStateMenu;
 
 	sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Apples games!");
 
@@ -47,11 +49,11 @@ int main()
 		if (game.gameStates.back() == GameState::GameStatTableShow)
 		{
 			DrawGameStat(&game.gameStat, window, game);
-
 		}
-		else if (game.gameStates.back() == GameState::None)
+		else if (game.gameStates.back() == GameState::MainMenu)
 		{
-			SetupGameMode(game, window);
+			//SetupGameMode(game, window);
+			InitGameStateMainMenu(gameStateMenu, game);
 			InitPlayer(game.player, game);
 			InitGameStat(&game.gameStat, "Real player", game.score.getString(), window);
 		}

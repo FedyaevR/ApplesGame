@@ -31,6 +31,12 @@
     <ClCompile Include="GameStat.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateMainMenu.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
@@ -53,6 +59,12 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="GameStat.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateMainMenu.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
       <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
