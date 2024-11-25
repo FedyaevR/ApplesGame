@@ -1,80 +1,93 @@
 #include "Player.h"
-#include "Game.h"
+#include <assert.h>
+#include "GameSettings.h"
+#include "Apple.h"
+
 
 namespace ApplesGame
 {
-	void InitPlayer(Player& player, const Game& game)
+	void InitPlayer(Player& player, const sf::Texture& texture)
 	{
-		if (game.gameSettings.isAccelerationTurned)
-		{
-			player.acceleration = ACCELERATION;
-		}
-		else
-		{
-			player.acceleration = 0.f;
-		}
+		// Init player state
+		player.position.x = (float)SCREEN_WIDTH / 2.f;
+		player.position.y = (float)SCREEN_HEGHT / 2.f;
+		player.speed = INITIAL_SPEED;
+		player.direction = PlayerDirection::Up;
 
-		player.direction = PlayerDirection::Right;
-		player.sprite.setPosition(player.position.x, player.position.y);
-		player.sprite.setTexture(game.playerTexture);
-
-		SetSpriteSize(player.sprite, PLAYER_SIZE, PLAYER_SIZE);
-		SetSpriteRelativeOrigin(player.sprite, 0.5f, 0.5f);
+		// Init sprite
+		player.sprite.setTexture(texture);
+		player.sprite.setOrigin(GetItemOrigin(player.sprite, {0.5f, 0.5f})); // We need to use texture as origin ignores scale
+		player.sprite.setScale(GetSpriteScale(player.sprite, {PLAYER_SIZE, PLAYER_SIZE}));
 	}
 
-	void PlayerDraw(Player& player, sf::RenderWindow& window)
+	void UpdatePlayer(Player& player, float timeDelta)
 	{
-		player.sprite.setPosition(player.position.x, player.position.y);
+		// Move player
+		switch (player.direction)
+		{
+			case PlayerDirection::Up:
+			{
+				player.position.y -= player.speed * timeDelta;
+				break;
+			}
+			case PlayerDirection::Right:
+			{
+				player.position.x += player.speed * timeDelta;
+				break;
+			}
+			case PlayerDirection::Down:
+			{
+				player.position.y += player.speed * timeDelta;
+				break;
+			}
+			case PlayerDirection::Left:
+			{
+				player.position.x -= player.speed * timeDelta;
+				break;
+			}
+		}
+	}
+
+	bool HasPlayerCollisionWithScreenBorder(const Player& player)
+	{
+		return !IsPointInRect(player.position, { 0.f, 0.f }, { (float)SCREEN_WIDTH, (float)SCREEN_HEGHT } );
+	}
+
+	void DrawPlayer(Player& player, sf::RenderWindow& window)
+	{
+		player.sprite.setPosition(OurVectorToSf(player.position));
+
+		const sf::Vector2f spriteScale = (GetSpriteScale(player.sprite, { PLAYER_SIZE, PLAYER_SIZE }));
+
+		// We need to rotate and flip sprite to match player direction
+		switch (player.direction)
+		{
+			case PlayerDirection::Up:
+			{
+				player.sprite.setScale(spriteScale.x, spriteScale.y);
+				player.sprite.setRotation(-90.f);
+				break;
+			}
+			case PlayerDirection::Right:
+			{
+				player.sprite.setScale(spriteScale.x, spriteScale.y);
+				player.sprite.setRotation(0.f);
+				break;
+			}
+			case PlayerDirection::Down:
+			{
+				player.sprite.setScale(spriteScale.x, spriteScale.y);
+				player.sprite.setRotation(90.f);
+				break;
+			}
+			case PlayerDirection::Left:
+			{
+				player.sprite.setScale(-spriteScale.x, spriteScale.y);
+				player.sprite.setRotation(0.f);
+				break;
+			}
+		}
+
 		window.draw(player.sprite);
-	}
-
-	bool IsScreenBorder(float position, float playerSpeed, PlayerDirection playerDirection, float deltaTime, Game& game)
-	{
-		float acceleration = 0.f;
-		if (game.gameSettings.isAccelerationTurned)
-		{
-			acceleration = ACCELERATION;
-		}
-
-		float step = (playerSpeed * deltaTime) + (acceleration * deltaTime) + (PLAYER_SIZE / 2.f);
-
-		switch (playerDirection)
-		{
-		case PlayerDirection::Right:
-			if (position + step >= SCREEN_WIDTH)
-			{
-				return true;
-			}
-
-			return false;
-			break;
-		case PlayerDirection::Up:
-			if (position - step <= 0.f)
-			{
-				return true;
-			}
-
-			return false;
-			break;
-		case PlayerDirection::Left:
-			if (position - step <= 0.f)
-			{
-				return true;
-			}
-
-			return false;
-			break;
-		case PlayerDirection::Down:
-			if (position + step >= SCREEN_HEIGHT)
-			{
-				return true;
-			}
-
-			return false;
-			break;
-		default:
-			return false;
-			break;
-		}
 	}
 }

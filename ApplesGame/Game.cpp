@@ -1,245 +1,306 @@
 #include "Game.h"
-#include "GameStat.h"
+#include <assert.h>
+#include <algorithm>
+#include "GameStatePlaying.h"
+#include "GameStateGameOver.h"
+#include "GameStateExitDialog.h"
+#include "GameStateMainMenu.h"
 
 namespace ApplesGame
 {
-	void GameUpdate(Game& game, float deltaTime, sf::RenderWindow& window)
+	bool operator<(const RecordsTableItem& lhs, const RecordsTableItem& rhs)
 	{
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		return lhs.score > rhs.score;
+	}
+
+	void InitGame(Game& game)
+	{
+		// Generate fake records table
+		game.recordsTable[0] = { "John", MAX_APPLES };
+		game.recordsTable[1] = { "Alice", MAX_APPLES / 2 };
+		game.recordsTable[2] = { "Bob", MAX_APPLES / 3 };
+		game.recordsTable[3] = { "Clementine", MAX_APPLES / 4 };
+		game.recordsTable[4] = { "You", 0 };
+
+		game.gameStateChangeType = GameStateChangeType::None;
+		game.pendingGameStateType = GameStateType::None;
+		game.pendingGameStateIsExclusivelyVisible = false;
+		SwitchGameState(game, GameStateType::MainMenu);
+	}
+
+	void HandleWindowEvents(Game& game, sf::RenderWindow& window)
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
 		{
-			game.player.direction = PlayerDirection::Right;
-			if (IsScreenBorder(game, window, deltaTime, game.player.direction) == false)
+			// Close window if close button or Escape key pressed
+			if (event.type == sf::Event::Closed)
 			{
-				game.player.position.x += game.player.speed * deltaTime;
+				window.close();
 			}
 
-			RotateSprite(game.player.sprite, game.player.direction);
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-			game.player.direction = PlayerDirection::Up;
-			if (IsScreenBorder(game, window, deltaTime, game.player.direction) == false)
+			if (game.gameStateStack.size() > 0)
 			{
-				game.player.position.y -= game.player.speed * deltaTime;
+				HandleWindowEventGameState(game, game.gameStateStack.back(), event);
 			}
-
-			RotateSprite(game.player.sprite, game.player.direction);
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	}
+
+	bool UpdateGame(Game& game, float timeDelta)
+	{
+		if (game.gameStateChangeType == GameStateChangeType::Switch)
 		{
-			game.player.direction = PlayerDirection::Left;
-			if (IsScreenBorder(game, window, deltaTime, game.player.direction) == false)
+			// Shutdown all game states
+			while (game.gameStateStack.size() > 0)
 			{
-				game.player.position.x -= game.player.speed * deltaTime;
+				ShutdownGameState(game, game.gameStateStack.back());
+				game.gameStateStack.pop_back();
 			}
-
-			RotateSprite(game.player.sprite, game.player.direction);
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		else if (game.gameStateChangeType == GameStateChangeType::Pop)
 		{
-			game.player.direction = PlayerDirection::Down;
-			if (IsScreenBorder(game, window, deltaTime, game.player.direction) == false)
+			// Shutdown only current game state
+			if (game.gameStateStack.size() > 0)
 			{
-				game.player.position.y += game.player.speed * deltaTime;
-			}
-
-			RotateSprite(game.player.sprite, game.player.direction);
-		}
-
-		DefineScreenPart(game.player);
-		AppleEat(game, window);
-		StoneCheck(game, window);
-
-		game.player.shape.setPosition(game.player.position.x, game.player.position.y);
-	}
-
-	void GameDraw(Game& game, sf::RenderWindow& window)
-	{
-		window.clear();
-
-		PlayerDraw(game.player, window);
-
-		window.draw(game.score);
-		
-		for (Apple* ptr = game.apples; ptr < game.apples + game.applesCount; ptr++)
-		{
-			AppleDraw(ptr, window);
-		}
-
-		for (int i = 0; i < STONE_COUNT; i++)
-		{
-			StoneDraw(game.stones[i], window);
-		}
-
-		window.display();
-	}
-
-	void RestartGame(sf::Text& text, sf::RenderWindow& window, Game& game)
-	{
-		window.clear();
-		window.draw(text);
-
-		window.display();
-
-		sf::sleep(sf::seconds(1.0f));
-		text.setString("");
-
-		game.gameStat.isTableShow = true;
-		UpdatePlayer(&game.gameStat, game.appleEatenCount);
-		//InitGameStat(&game.gameStat, "Real player", game.score.getString(), window);
-	}
-
-	sf::Text InitScore(const sf::Font& font)
-	{
-		sf::Text score;
-		score.setFont(font);
-		score.setFillColor(sf::Color::White);
-		score.setCharacterSize(55);
-
-		score.setPosition(SCREEN_WIDTH / 2.f, -5.f);
-		score.setString("0");
-
-		return score;
-	}
-
-	sf::Text GameOver(const sf::Font& font, Game& game)
-	{
-		sf::Text text;
-		text.setFont(font);
-		text.setFillColor(sf::Color::Red);
-		text.setCharacterSize(85);
-
-		text.setPosition(SCREEN_WIDTH / 4.f, SCREEN_HEIGHT / 3.f);
-		text.setString("GAME OVER");
-
-		game.gameOverSound.play();
-
-		return text;
-	}
-
-	sf::Text WinText(const sf::Font& font, Game& game)
-	{
-		sf::Text text;
-		text.setFont(font);
-		text.setFillColor(sf::Color::Green);
-		text.setCharacterSize(85);
-
-		text.setPosition(SCREEN_WIDTH / 4.f, SCREEN_HEIGHT / 3.f);
-		text.setString("YOU WIN!");
-
-		return text;
-	}
-
-	bool IsScreenBorder(Game& game, sf::RenderWindow& window, float deltaTime, PlayerDirection direction)
-	{
-		if (direction == PlayerDirection::Right || direction == PlayerDirection::Left)
-		{
-			if (IsScreenBorder(game.player.position.x, game.player.speed, game.player.direction, deltaTime, game) == false)
-			{
-				return false;
+				ShutdownGameState(game, game.gameStateStack.back());
+				game.gameStateStack.pop_back();
 			}
 		}
 
-		if (direction == PlayerDirection::Up || direction == PlayerDirection::Down)
+		// Initialize new game state if needed
+		if (game.pendingGameStateType != GameStateType::None)
 		{
-			if (IsScreenBorder(game.player.position.y, game.player.speed, game.player.direction, deltaTime, game) == false)
-			{
-				return false;
-			}
+			game.gameStateStack.push_back({ game.pendingGameStateType, nullptr, game.pendingGameStateIsExclusivelyVisible });
+			InitGameState(game, game.gameStateStack.back());
 		}
 
-		RestartSettings(game);
-		
-		InitStones(game.stones, game.apples, game);
+		game.gameStateChangeType = GameStateChangeType::None;
+		game.pendingGameStateType = GameStateType::None;
+		game.pendingGameStateIsExclusivelyVisible = false;
 
-		InitApples(game.apples, game);
-		game.score.setString("0");
+		if (game.gameStateStack.size() > 0)
+		{
+			UpdateGameState(game, game.gameStateStack.back(), timeDelta);
+			return true;
+		}
 
-		game.player.position = { game.player.xStart, game.player.yStart };
-		InitPlayer(game.player, game);
-
-		game.text = GameOver(game.font, game);
-		RestartGame(game.text, window, game);
-
-		game.appleEatenCount = 0;
-		game.player.speed = INITIAL_SPEED;
-
-		return true;
+		return false;
 	}
 
-	void AppleEat(Game& game, sf::RenderWindow& window)
+	void DrawGame(Game& game, sf::RenderWindow& window)
 	{
-		for (Apple* apple = game.apples; apple < game.apples + game.applesCount; apple++)
+		if (game.gameStateStack.size() > 0)
 		{
-			if (apple->screenPart != game.player.screenPart)
+			std::vector<GameState*> visibleGameStates;
+			for (auto it = game.gameStateStack.rbegin(); it != game.gameStateStack.rend(); ++it)
 			{
-				continue;
-			}
-
-			float squareDistance = (game.player.position.x - apple->position.x) * (game.player.position.x - apple->position.x) + (game.player.position.y - apple->position.y) * (game.player.position.y - apple->position.y);
-			float squareRadiusSum = (APPLE_SIZE + PLAYER_SIZE) * (APPLE_SIZE + PLAYER_SIZE) / 4;
-
-			if (squareDistance <= squareRadiusSum)
-			{
-				game.appleEatenCount++;
-				game.player.speed += game.player.acceleration;
-				game.appleEatSound.play();
-
-				std::string appleEatenCountStr = std::to_string(game.appleEatenCount);
-
-				game.score.setString(appleEatenCountStr);
-
-				if (game.gameSettings.isEndedApplesTurned == false)
+				visibleGameStates.push_back(&(*it));
+				if (it->isExclusivelyVisible)
 				{
-					apple->position = GenerateApplePosition();
-					AppleInit(apple, game);
-				}
-				else 
-				{
-					apple->position.x = -100000.f;
-					apple->position.y = -100000.f;
-					if (game.appleEatenCount == game.applesCount)
-					{
-						RestartSettings(game);
-
-						InitStones(game.stones, game.apples, game);
-						InitApples(game.apples, game);
-
-						game.score.setString("0");
-
-						game.player.position = { game.player.xStart, game.player.yStart };
-						InitPlayer(game.player, game);
-
-						sf::Text text = WinText(game.font, game);
-						RestartGame(text, window, game);
-
-						game.appleEatenCount = 0;
-						game.player.speed = INITIAL_SPEED;
-					}
+					break;
 				}
 			}
+
+			for (auto it = visibleGameStates.rbegin(); it != visibleGameStates.rend(); ++it)
+			{
+				DrawGameState(game, **it, window);
+			}
 		}
 	}
 
-	void StoneCheck(Game& game, sf::RenderWindow& window)
+	void ShutdownGame(Game& game)
 	{
-		if (IsStoneTouched(game.player.shape, game.stones))
+		// Shutdown all game states
+		while (game.gameStateStack.size() > 0)
 		{
-			RestartSettings(game);
+			ShutdownGameState(game, game.gameStateStack.back());
+			game.gameStateStack.pop_back();
+		}
 
-			InitStones(game.stones, game.apples, game);
-			InitApples(game.apples, game);
+		game.gameStateChangeType = GameStateChangeType::None;
+		game.pendingGameStateType = GameStateType::None;
+		game.pendingGameStateIsExclusivelyVisible = false;
+	}
 
-			game.score.setString("0");
+	void PushGameState(Game& game, GameStateType stateType, bool isExclusivelyVisible)
+	{
+		game.pendingGameStateType = stateType;
+		game.pendingGameStateIsExclusivelyVisible = isExclusivelyVisible;
+		game.gameStateChangeType = GameStateChangeType::Push;
+	}
 
-			game.player.position = { game.player.xStart, game.player.yStart };
-			InitPlayer(game.player, game);
+	void PopGameState(Game& game)
+	{
+		game.pendingGameStateType = GameStateType::None;
+		game.pendingGameStateIsExclusivelyVisible = false;
+		game.gameStateChangeType = GameStateChangeType::Pop;
+	}
 
-			game.text = GameOver(game.font, game);
-			RestartGame(game.text, window, game);
+	void SwitchGameState(Game& game, GameStateType newState)
+	{
+		game.pendingGameStateType = newState;
+		game.pendingGameStateIsExclusivelyVisible = false;
+		game.gameStateChangeType = GameStateChangeType::Switch;
+	}
 
-			game.appleEatenCount = 0;
-			game.player.speed = INITIAL_SPEED;
+	void InitGameState(Game& game, GameState& state)
+	{
+		switch (state.type)
+		{
+		case GameStateType::MainMenu:
+		{
+			state.data = new GameStateMainMenuData();
+			InitGameStateMainMenu(*(GameStateMainMenuData*)state.data, game);
+			break;
+		}
+		case GameStateType::Playing:
+		{
+			state.data = new GameStatePlayingData();
+			InitGameStatePlaying(*(GameStatePlayingData*)state.data, game);
+			break;
+		}
+		case GameStateType::GameOver:
+		{
+			state.data = new GameStateGameOverData();
+			InitGameStateGameOver(*(GameStateGameOverData*)state.data, game);
+			break;
+		}
+		case GameStateType::ExitDialog:
+		{
+			state.data = new GameStateExitDialogData();
+			InitGameStateExitDialog(*(GameStateExitDialogData*)state.data, game);
+			break;
+		}
+		default:
+			assert(false); // We want to know if we forgot to implement new game statee
+			break;
 		}
 	}
+
+	void ShutdownGameState(Game& game, GameState& state)
+	{
+		switch (state.type)
+		{
+		case GameStateType::MainMenu:
+		{
+			ShutdownGameStateMainMenu(*(GameStateMainMenuData*)state.data, game);
+			delete (GameStateMainMenuData*)state.data;
+			break;
+		}
+		case GameStateType::Playing:
+		{
+			ShutdownGameStatePlaying(*(GameStatePlayingData*)state.data, game);
+			delete (GameStatePlayingData*)state.data;
+			break;
+		}
+		case GameStateType::GameOver:
+		{
+			ShutdownGameStateGameOver(*(GameStateGameOverData*)state.data, game);
+			delete (GameStateGameOverData*)state.data;
+			break;
+		}
+		case GameStateType::ExitDialog:
+		{
+			ShutdownGameStateExitDialog(*(GameStateExitDialogData*)state.data, game);
+			delete (GameStateExitDialogData*)state.data;
+			break;
+		}
+		default:
+			assert(false); // We want to know if we forgot to implement new game statee
+			break;
+		}
+
+		state.data = nullptr;
+	}
+
+	void HandleWindowEventGameState(Game& game, GameState& state, sf::Event& event)
+	{
+		switch (state.type)
+		{
+		case GameStateType::MainMenu:
+		{
+			HandleGameStateMainMenuWindowEvent(*(GameStateMainMenuData*)state.data, game, event);
+			break;
+		}
+		case GameStateType::Playing:
+		{
+			HandleGameStatePlayingWindowEvent(*(GameStatePlayingData*)state.data, game, event);
+			break;
+		}
+		case GameStateType::GameOver:
+		{
+			HandleGameStateGameOverWindowEvent(*(GameStateGameOverData*)state.data, game, event);
+			break;
+		}
+		case GameStateType::ExitDialog:
+		{
+			HandleGameStateExitDialogWindowEvent(*(GameStateExitDialogData*)state.data, game, event);
+			break;
+		}
+		default:
+			assert(false); // We want to know if we forgot to implement new game statee
+			break;
+		}
+	}
+
+	void UpdateGameState(Game& game, GameState& state, float timeDelta)
+	{
+		switch (state.type)
+		{
+		case GameStateType::MainMenu:
+		{
+			UpdateGameStateMainMenu(*(GameStateMainMenuData*)state.data, game, timeDelta);
+			break;
+		}
+		case GameStateType::Playing:
+		{
+			UpdateGameStatePlaying(*(GameStatePlayingData*)state.data, game, timeDelta);
+			break;
+		}
+		case GameStateType::GameOver:
+		{
+			UpdateGameStateGameOver(*(GameStateGameOverData*)state.data, game, timeDelta);
+			break;
+		}
+		case GameStateType::ExitDialog:
+		{
+			UpdateGameStateExitDialog(*(GameStateExitDialogData*)state.data, game, timeDelta);
+			break;
+		}
+		default:
+			assert(false); // We want to know if we forgot to implement new game statee
+			break;
+		}
+	}
+
+	void DrawGameState(Game& game, GameState& state, sf::RenderWindow& window)
+	{
+		switch (state.type)
+		{
+		case GameStateType::MainMenu:
+		{
+			DrawGameStateMainMenu(*(GameStateMainMenuData*)state.data, game, window);
+			break;
+		}
+		case GameStateType::Playing:
+		{
+			DrawGameStatePlaying(*(GameStatePlayingData*)state.data, game, window);
+			break;
+		}
+		case GameStateType::GameOver:
+		{
+			DrawGameStateGameOver(*(GameStateGameOverData*)state.data, game, window);
+			break;
+		}
+		case GameStateType::ExitDialog:
+		{
+			DrawGameStateExitDialog(*(GameStateExitDialogData*)state.data, game, window);
+			break;
+		}
+		default:
+			assert(false); // We want to know if we forgot to implement new game statee
+			break;
+		}
+	}
+
 }

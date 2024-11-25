@@ -2,66 +2,63 @@
 // Authored by Aleksandr Rybalka (polterageist@gmail.com)
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include "GameSettings.h"
+#include <cstdlib>
+
 #include "Game.h"
 
 using namespace ApplesGame;
 
 int main()
 {
-	sf::sleep(sf::milliseconds(15));
-
-	int seed = (int)time(nullptr);
+	// Init random number generator
+	unsigned int seed = (unsigned int)time(nullptr); // Get current time as seed. You can also use any other number to fix randomization
 	srand(seed);
 
-	Game game;
+	// Init window
+	sf::RenderWindow window(sf::VideoMode(ApplesGame::SCREEN_WIDTH, ApplesGame::SCREEN_HEGHT), "AppleGame");
 
-	sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Apples games!");
+	// We now use too much memory for stack, so we need to allocate it on heap
+	ApplesGame::Game* game = new ApplesGame::Game();
+	InitGame(*game);
 
-	sf::Clock gameClock;
-	float lastTime = gameClock.getElapsedTime().asSeconds();
+	// Init game clock
+	sf::Clock game_clock;
+	sf::Time lastTime = game_clock.getElapsedTime();
 
+	// Game loop
 	while (window.isOpen())
 	{
-		float currentTime = gameClock.getElapsedTime().asSeconds();
-		float deltaTime = currentTime - lastTime;
-		lastTime = currentTime; 
+		HandleWindowEvents(*game, window);
 
-		sf::Event event;
-		while (window.pollEvent(event))
+		if (!window.isOpen())
 		{
-			if (event.type == sf::Event::Closed)
-			{
-				window.close();
-			}
-
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
-			{
-				window.close();
-			}
-
+			break;
 		}
 
-		if (game.gameStat.isTableShow)
+		// Calculate time delta
+		sf::Time currentTime = game_clock.getElapsedTime();
+		float timeDelta = currentTime.asSeconds() - lastTime.asSeconds();
+		lastTime = currentTime;
+		if (UpdateGame(*game, timeDelta))
 		{
-			DrawGameStat(&game.gameStat, window);
-			
+			// Draw everything here
+		// Clear the window first
+			window.clear();
+
+			DrawGame(*game, window);
+
+			// End the current frame, display window contents on screen
+			window.display();
 		}
-		else if (game.gameSettings.isGameStart == false)
+		else
 		{
-			SetupGameMode(game, window);
-			InitPlayer(game.player, game);
-			InitGameStat(&game.gameStat, "Real player", game.score.getString(), window);
-		}
-		else 
-		{
-			GameUpdate(game, deltaTime, window);
-			GameDraw(game, window);
+			window.close();
 		}
 	}
 
-	delete[] game.apples;
+	ShutdownGame(*game);
+	delete game;
+	game = nullptr;
 
 	return 0;
 }

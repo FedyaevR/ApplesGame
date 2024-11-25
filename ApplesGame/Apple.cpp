@@ -1,73 +1,194 @@
 #include "Apple.h"
-#include "Game.h"
-#include "Math.h"
+#include "GameSettings.h"
+
+#include <cstdlib>
+#include <assert.h>
 
 namespace ApplesGame
 {
-	int GenerateApplesCount()
+	void InitApple(Apple& apple, const sf::Texture& texture)
 	{
-		return 5 + rand() % (20 - 5 + 1);
+		// Init sprite
+		apple.sprite.setTexture(texture);
+		apple.sprite.setOrigin(GetItemOrigin(apple.sprite, { 0.5f, 0.5f })); // We need to use texture as origin ignores scale
+		apple.sprite.setScale(GetSpriteScale(apple.sprite, { APPLE_SIZE, APPLE_SIZE }));
 	}
 
-	void AppleInit(Apple* apple, const Game& game)
+	void DrawApple(Apple& apple, sf::RenderWindow& window)
 	{
-		(*apple).sprite.setPosition((*apple).position.x, (*apple).position.y);
-		(*apple).sprite.setTexture(game.appleTexture);
-
-		SetSpriteSize((*apple).sprite, APPLE_SIZE, APPLE_SIZE);
-		SetSpriteRelativeOrigin((*apple).sprite, 0.5f, 0.5f);
-		DefineScreenPart(apple);
-	}
-
-	void InitApples(Apple* apples, const Game& game)
-	{
-		for (Apple* ptr = apples; ptr < apples + game.applesCount; ptr++)
+		if (apple.isEaten)
 		{
-			ptr->position = GenerateApplePosition();
-			AppleInit(ptr, game);
+			return;
+		}
+			
+		apple.sprite.setPosition(OurVectorToSf(apple.position));
+		window.draw(apple.sprite);
+	}
+
+	void MarkAppleAsEaten(Apple& apple)
+	{
+		apple.isEaten = true;
+	}
+
+	void ResetAppleState(Apple& apple)
+	{
+		// init apple state
+		apple.position.x = (float)(rand() % SCREEN_WIDTH);
+		apple.position.y = (float)(rand() % SCREEN_HEGHT);
+		apple.isEaten = false;
+	}
+
+	void ClearApplesGrid(ApplesGrid& applesGrid)
+	{
+		for (int i = 0; i < APPLES_GRID_CELLS_HORIZONTAL; i++)
+		{
+			for (int j = 0; j < APPLES_GRID_CELLS_VERTICAL; j++)
+			{
+				ApplesGridCell& cell = applesGrid.cells[i][j];
+				for (int k = 0; k < MAX_APPLES_IN_CELL; k++)
+				{
+					Apple* apple = cell.apples[k];
+					if (apple != nullptr)
+					{
+						for (int i = apple->numGridCells - 1; i >= 0; --i)
+						{
+							apple->gridCells[i] = nullptr;
+						}
+						apple->numGridCells = 0;
+					}
+
+					cell.apples[k] = nullptr;
+				}
+				cell.numApplesInCell = 0;
+			}
 		}
 	}
 
-	bool IsApplePosition(Apple* apples, float positionX, float positionY, int applesCount)
+	void AddAppleToGrid(ApplesGrid& applesGrid, Apple& apple)
 	{
-		float appleStartX = 0.f;
-		float appleEndX = 0.f;
-		float appleStartY = 0.f;
-		float appleEndY = 0.f;
+		Vector2D appleCornerTL = apple.position + Vector2D{ -APPLE_SIZE / 2, -APPLE_SIZE / 2 };
+		Vector2D appleCornerBR = apple.position + Vector2D{ APPLE_SIZE / 2, APPLE_SIZE / 2 };
 
-		for (Apple* ptr = apples; ptr < apples + applesCount; ptr++)
+		const float cellSizeX = (float)SCREEN_WIDTH / APPLES_GRID_CELLS_HORIZONTAL;
+		const float cellSizeY = (float)SCREEN_WIDTH / APPLES_GRID_CELLS_VERTICAL;
+		int minCellX = std::max((int)(appleCornerTL.x / cellSizeX), 0);
+		int maxCellX = std::min((int)(appleCornerBR.x / cellSizeX), (int)APPLES_GRID_CELLS_HORIZONTAL - 1);
+		int minCellY = std::max((int)(appleCornerTL.y / cellSizeY), 0);
+		int maxCellY = std::min((int)(appleCornerBR.y / cellSizeY), (int)APPLES_GRID_CELLS_VERTICAL - 1);
+
+		ApplesGridCell* newCells[4] = {nullptr};
+		int numNewCells = 0;
+		// Add apple to new cells	
+		for (int cellX = minCellX; cellX <= maxCellX; ++cellX)
 		{
-			appleStartX = ptr->shape.getPosition().x - APPLE_SIZE / 2.f;
-			appleEndX = ptr->shape.getPosition().x + APPLE_SIZE / 2.f;
-
-			appleStartY = ptr->shape.getPosition().y - APPLE_SIZE / 2.f;
-			appleEndY = ptr->shape.getPosition().y + APPLE_SIZE / 2.f;
-
-			if (positionX >= appleStartX && positionX <= appleEndX + STONE_WIDTH_MAX)
+			for (int cellY = minCellY; cellY <= maxCellY; ++cellY)
 			{
-				return true;
-			}
-			else if (positionY >= appleStartY && positionY <= appleEndY + STONE_HEIGHT_MAX)
-			{
-				return true;
+				ApplesGridCell& cell = applesGrid.cells[cellX][cellY];
+
+				bool isAppleInCell = false;
+				for (ApplesGridCell* oldCell : apple.gridCells)
+				{
+					if (oldCell == &cell)
+					{
+						isAppleInCell = true;
+						break;
+					}
+				}
+
+				if (!isAppleInCell)
+				{
+					cell.apples[cell.numApplesInCell++] = &apple;
+					newCells[numNewCells++] = &cell;
+					assert(cell.numApplesInCell <= MAX_APPLES_IN_CELL);
+				}
 			}
 		}
 
-		return false;
+		// Remove apple from old cells
+		for (int i = 0; i < apple.numGridCells; ++i)
+		{
+			ApplesGridCell* cell = apple.gridCells[i];
+			bool needRemoveFromCell = true;
+			for (int j = 0; j < numNewCells; ++j)
+			{
+				if (cell == newCells[j])
+				{
+					needRemoveFromCell = false;
+					break;
+				}
+			}
+
+			if (needRemoveFromCell)
+			{
+				for (int j = 0; j < cell->numApplesInCell; ++j)
+				{
+					if (cell->apples[i] == &apple)
+					{
+						cell->apples[i] = cell->apples[cell->numApplesInCell - 1];
+						cell->numApplesInCell--;
+						break;
+					}
+				}
+				apple.gridCells[i] = apple.gridCells[apple.numGridCells - 1];
+				--apple.numGridCells;
+			}
+		}
 	}
 
-	Position2D GenerateApplePosition()
+	void RemoveAppleFromGrid(ApplesGrid& applesGrid, Apple& apple)
 	{
-		Position2D result;
-		result.x = 1 + rand() / (float)(RAND_MAX) * (SCREEN_WIDTH - 1);
-		result.y = 1 + rand() / (float)(RAND_MAX) * (SCREEN_HEIGHT - 1);
-
-		return result;
+		for (int i = 0; i < apple.numGridCells; ++i)
+		{
+			ApplesGridCell* cell = apple.gridCells[i];
+			for (int j = 0; j < cell->numApplesInCell; ++j)
+			{
+				if (cell->apples[i] == &apple)
+				{
+					cell->apples[i] = cell->apples[cell->numApplesInCell - 1];
+					cell->numApplesInCell--;
+					break;
+				}
+			}
+			apple.gridCells[i] = nullptr;
+		}
+		apple.numGridCells = 0;
 	}
 
-	void AppleDraw(Apple* apple, sf::RenderWindow& window)
+	bool FindPlayerCollisionWithApples(const Vector2D& playerPosition, const ApplesGrid& grid, Apple** result, int& numFoundApples)
 	{
-		apple->sprite.setPosition(apple->position.x, apple->position.y);
-		window.draw(apple->sprite);
+		Vector2D playerCornerTL = playerPosition + Vector2D{ -PLAYER_SIZE / 2, -PLAYER_SIZE / 2 };
+		Vector2D playerCornerBR = playerPosition + Vector2D{ PLAYER_SIZE / 2, PLAYER_SIZE / 2 };
+
+		const float cellSizeX = (float)SCREEN_WIDTH / APPLES_GRID_CELLS_HORIZONTAL;
+		const float cellSizeY = (float)SCREEN_WIDTH / APPLES_GRID_CELLS_VERTICAL;
+		int minCellX = std::max((int)(playerCornerTL.x / cellSizeX), 0);
+		int maxCellX = std::min((int)(playerCornerBR.x / cellSizeX), (int)APPLES_GRID_CELLS_HORIZONTAL - 1);
+		int minCellY = std::max((int)(playerCornerTL.y / cellSizeY), 0);
+		int maxCellY = std::min((int)(playerCornerBR.y / cellSizeY), (int)APPLES_GRID_CELLS_VERTICAL - 1);
+
+		numFoundApples = 0;
+		for (int cellX = minCellX; cellX <= maxCellX; ++cellX)
+		{
+			for (int cellY = minCellY; cellY <= maxCellY; ++cellY)
+			{
+				for (int i = 0; i < grid.cells[cellX][cellY].numApplesInCell; ++i)
+				{
+					Apple* apple = grid.cells[cellX][cellY].apples[i];
+					if (!apple->isEaten)
+					{
+						float dx = playerPosition.x - apple->position.x;
+						float dy = playerPosition.y - apple->position.y;
+						float distance = sqrt(dx * dx + dy * dy);
+						if (distance < (PLAYER_SIZE + APPLE_SIZE) / 2)
+						{
+							result[numFoundApples] = apple;
+							++numFoundApples;
+						}
+					}
+				}
+			}
+		}
+
+		return numFoundApples > 0;
 	}
 }

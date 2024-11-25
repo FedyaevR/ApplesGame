@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{78395798-71DC-4E4F-9D6A-8EF6D743F030}</ProjectGuid>
+    <ProjectGuid>{84F2CC44-BACB-497F-A3B8-81DBCCD3AD5B}</ProjectGuid>
     <RootNamespace>ApplesGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>ApplesGame</ProjectName>
@@ -126,7 +126,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\SFML\SFML-2.5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\SFML\SFML-2.5.1\lib;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-main-d.lib;sfml-graphics-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-audio-s-d.lib;sfml-network-s-d.lib;ws2_32.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -161,24 +161,26 @@
     <ClCompile Include="Apple.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameMain.cpp" />
-    <ClCompile Include="GameSettings.cpp" />
-    <ClCompile Include="GameStat.cpp" />
+    <ClCompile Include="GameStateExitDialog.cpp" />
+    <ClCompile Include="GameStateGameOver.cpp" />
+    <ClCompile Include="GameStateMainMenu.cpp" />
+    <ClCompile Include="GameStatePlaying.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Stone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Apple.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameSettings.h" />
-    <ClInclude Include="GameStat.h" />
+    <ClInclude Include="GameStateExitDialog.h" />
+    <ClInclude Include="GameStateGameOver.h" />
+    <ClInclude Include="GameStateMainMenu.h" />
+    <ClInclude Include="GameStatePlaying.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Stone.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ApplesGame.rc" />
+    <ClInclude Include="PlayingState.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,100 +1,83 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <cassert>
+
 #include "Player.h"
 #include "Apple.h"
-#include "Stone.h"
-#include "GameStat.h"
+#include "GameSettings.h"
 
 namespace ApplesGame
 {
-	int GenerateApplesCount();
-	sf::Text InitScore(const sf::Font& font);
-
-	enum class ScreenPart : int
+	enum class GameOptions: std::uint8_t
 	{
-		LeftTop = 0,
-		LeftCenter,
-		LeftBottom,
-		MiddleTop,
-		MiddleCenter,
-		MiddleBottom,
-		RightTop,
-		RightCenter,
-		RightBottom
+		InfiniteApples = 1 << 0,
+		WithAcceleration = 1 << 1,
+
+		Default = InfiniteApples | WithAcceleration,
+		Empty = 0
+	};
+
+	struct RecordsTableItem
+	{
+		std::string name;
+		int score = 0;
+	};
+
+	bool operator<(const RecordsTableItem& lhs, const RecordsTableItem& rhs);
+
+	enum class GameStateType
+	{
+		None = 0,
+		MainMenu,
+		Playing,
+		GameOver,
+		ExitDialog,
+	};
+
+	struct GameState
+	{
+		GameStateType type = GameStateType::None;
+		void* data = nullptr;
+		bool isExclusivelyVisible = false;
+	};
+
+	enum class GameStateChangeType
+	{
+		None,
+		Push,
+		Pop,
+		Switch
 	};
 
 	struct Game
 	{
-		Player player;
+		std::vector<GameState> gameStateStack;
+		GameStateChangeType gameStateChangeType = GameStateChangeType::None;
+		GameStateType pendingGameStateType = GameStateType::None;
+		bool pendingGameStateIsExclusivelyVisible = false;
 
-		GameModes gameModes;
-		GameSettings gameSettings;
-		GameStat gameStat;
-
-
-		sf::Texture playerTexture;
-		sf::Texture appleTexture;
-		sf::Texture stoneTexture;
-
-		sf::SoundBuffer appleEatBuffer;
-		sf::SoundBuffer gameOverBuffer;
-
-		sf::Sound appleEatSound;
-		sf::Sound gameOverSound;
-
-
-		int appleEatenCount = 0;
-
-		Apple* apples;
-		int applesCount;
-
-		Stone stones[STONE_COUNT];
-
-		sf::Font font;
-
-		sf::Text score;
-		sf::Text text;
-
-		Game()
-		{
-			assert(playerTexture.loadFromFile(RESOURCES_PATH + "\Player.png"));
-			assert(appleTexture.loadFromFile(RESOURCES_PATH + "\Apple.png"));
-			assert(stoneTexture.loadFromFile(RESOURCES_PATH + "\Rock.png"));
-
-			assert(appleEatBuffer.loadFromFile(RESOURCES_PATH + "\AppleEat.wav"));
-			assert(gameOverBuffer.loadFromFile(RESOURCES_PATH + "\Death.wav"));
-
-			appleEatSound.setBuffer(appleEatBuffer);
-			gameOverSound.setBuffer(gameOverBuffer);
-
-			player.position = { player.xStart, player.yStart };
-			player.direction = PlayerDirection::Right;
-
-			font.loadFromFile("konstantinopel.ttf");
-			score = InitScore(font);
-
-
-			//яблоко сгенерил, теперь надо коллизию включить и разобратьс€ с камн€ми
-			applesCount = GenerateApplesCount();
-			apples = new Apple[applesCount];
-
-			InitApples(apples,*this);
-			InitStones(stones, apples, *this);
-		}
+		GameOptions options = GameOptions::Default;
+		RecordsTableItem recordsTable[MAX_RECORDS_TABLE_SIZE];
 	};
 
-	void GameUpdate(Game& game, float deltaTime, sf::RenderWindow& window);
+	
+	void InitGame(Game& game);
+	void HandleWindowEvents(Game& game, sf::RenderWindow& window);
+	bool UpdateGame(Game& game, float timeDelta); // Return false if game should be closed
+	void DrawGame(Game& game, sf::RenderWindow& window);
+	void ShutdownGame(Game& game);
 
-	void GameDraw(Game& game, sf::RenderWindow& window);
+	// Add new game state on top of the stack
+	void PushGameState(Game& game, GameStateType stateType, bool isExclusivelyVisible);
 
-	void RestartGame(sf::Text& text, sf::RenderWindow& window, Game& game);
+	// Remove current game state from the stack
+	void PopGameState(Game& game);
 
-	sf::Text GameOver(const sf::Font& font, Game& game);
+	// Remove all game states from the stack and add new one
+	void SwitchGameState(Game& game, GameStateType newState);
 
-	bool IsScreenBorder(Game& game, sf::RenderWindow& window, float deltaTime, PlayerDirection direction);
-
-	void AppleEat(Game& game, sf::RenderWindow& window);
-	void StoneCheck(Game& game, sf::RenderWindow& window);
+	void InitGameState(Game& game, GameState& state);
+	void ShutdownGameState(Game& game, GameState& state);
+	void HandleWindowEventGameState(Game& game, GameState& state, sf::Event& event);
+	void UpdateGameState(Game& game, GameState& state, float timeDelta);
+	void DrawGameState(Game& game, GameState& state, sf::RenderWindow& window);
 }

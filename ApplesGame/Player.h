@@ -3,40 +3,28 @@
 #include "Math.h"
 #include "GameSettings.h"
 
-namespace ApplesGame 
+namespace ApplesGame
 {
-	enum class PlayerDirection : int
+	enum class PlayerDirection
 	{
-		Right = 0,
-		Up,
-		Left,
-		Down
+		Up = 0,
+		Right,
+		Down,
+		Left
 	};
-
-	struct Game;
-	enum class ScreenPart : int;
 
 	struct Player
 	{
-		const float xStart = SCREEN_WIDTH / 2.f;
-		const float yStart = SCREEN_HEIGHT / 2.f;
-
-		float speed = INITIAL_SPEED;
-		float acceleration = 0.f;
-
-		Position2D position;
-		sf::RectangleShape shape;
-		PlayerDirection direction;
-
+		Position position;
+		float speed = 0.f; // Pixels per second
+		PlayerDirection direction = PlayerDirection::Up;
 		sf::Sprite sprite;
-
-		ScreenPart screenPart;
 	};
 
+	void InitPlayer(Player& player, const sf::Texture& texture);
+	void UpdatePlayer(Player& player, float timeDelta);
 
-	void InitPlayer(Player& player, const Game& game);
+	bool HasPlayerCollisionWithScreenBorder(const Player& player);
 
-	void PlayerDraw(Player& player, sf::RenderWindow& window);
-
-	bool IsScreenBorder(float position, float playerSpeed, PlayerDirection playerDirection, float deltaTime, Game& game);
+	void DrawPlayer(Player& player, sf::RenderWindow& window);
 }
