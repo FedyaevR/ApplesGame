@@ -1,14 +1,17 @@
 #include "Menu.h"
 #include <assert.h>
+#include <iostream>
 
 namespace ApplesGame
 {
 	void InitMenuItem(MenuItem& item)
 	{
+		int i = 0;
 		for (auto& child : item.children)
 		{
 			child->parent = &item;
 			InitMenuItem(*child);
+			i++;
 		}
 	}
 

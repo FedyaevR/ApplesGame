@@ -5,6 +5,8 @@
 #include "GameStateGameOver.h"
 #include "GameStateExitDialog.h"
 #include "GameStateMainMenu.h"
+#include "GameStateStatTable.h"
+#include "GameStat.h"
 
 namespace ApplesGame
 {
@@ -171,6 +173,12 @@ namespace ApplesGame
 			InitGameStateExitDialog(*(GameStateExitDialogData*)state.data, game);
 			break;
 		}
+		case GameStateType::GameStatTable:
+		{
+			state.data = new GameSateStatTableData();
+			InitGameStateStatTable(*(GameSateStatTableData*)state.data, game);
+			break;
+		}
 		default:
 			assert(false); // We want to know if we forgot to implement new game statee
 			break;
@@ -205,6 +213,10 @@ namespace ApplesGame
 			delete (GameStateExitDialogData*)state.data;
 			break;
 		}
+		case GameStateType::GameStatTable:
+		{
+			break;
+		}
 		default:
 			assert(false); // We want to know if we forgot to implement new game statee
 			break;
@@ -237,6 +249,11 @@ namespace ApplesGame
 			HandleGameStateExitDialogWindowEvent(*(GameStateExitDialogData*)state.data, game, event);
 			break;
 		}
+		case GameStateType::GameStatTable:
+		{
+			HandleGameStateStatTableWindowEvent(*(GameSateStatTableData*)state.data, game, event);
+			break;
+		}
 		default:
 			assert(false); // We want to know if we forgot to implement new game statee
 			break;
@@ -267,6 +284,11 @@ namespace ApplesGame
 			UpdateGameStateExitDialog(*(GameStateExitDialogData*)state.data, game, timeDelta);
 			break;
 		}
+		case GameStateType::GameStatTable:
+		{
+			UpdateGameStateStatTableData(*(GameSateStatTableData*)state.data, game, timeDelta);
+			break;
+		}
 		default:
 			assert(false); // We want to know if we forgot to implement new game statee
 			break;
@@ -295,6 +317,11 @@ namespace ApplesGame
 		case GameStateType::ExitDialog:
 		{
 			DrawGameStateExitDialog(*(GameStateExitDialogData*)state.data, game, window);
+			break;
+		}
+		case GameStateType::GameStatTable:
+		{
+			DrawGameStateStatTable(*(GameSateStatTableData*)state.data, game, window);
 			break;
 		}
 		default:

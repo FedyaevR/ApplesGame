@@ -17,7 +17,9 @@ namespace ApplesGame
 		data.menu.rootItem.childrenSpacing = 10.f;
 		data.menu.rootItem.children.push_back(&data.startGameItem);
 		data.menu.rootItem.children.push_back(&data.optionsItem);
+		data.menu.rootItem.children.push_back(&data.recordTableShowItem);
 		data.menu.rootItem.children.push_back(&data.exitGameItem);
+
 
 		data.startGameItem.text.setString("Start Game");
 		data.startGameItem.text.setFont(data.font);
@@ -56,6 +58,14 @@ namespace ApplesGame
 		data.exitGameItem.childrenSpacing = 10.f;
 		data.exitGameItem.children.push_back(&data.yesItem);
 		data.exitGameItem.children.push_back(&data.noItem);
+
+		data.recordTableShowItem.text.setString("Record table");
+		data.recordTableShowItem.text.setFont(data.font);
+		data.recordTableShowItem.text.setCharacterSize(24);
+		data.recordTableShowItem.hintText.setString("Record table");
+		data.recordTableShowItem.hintText.setFont(data.font);
+		data.recordTableShowItem.hintText.setCharacterSize(48);
+		data.recordTableShowItem.hintText.setFillColor(sf::Color::Red);
 
 		data.yesItem.text.setString("Yes");
 		data.yesItem.text.setFont(data.font);
@@ -116,6 +126,10 @@ namespace ApplesGame
 				else if (data.menu.selectedItem == &data.noItem)
 				{
 					CollapseSelectedItem(data.menu);
+				}
+				else if (data.menu.selectedItem == &data.recordTableShowItem)
+				{
+					SwitchGameState(game, GameStateType::GameStatTable);
 				}
 				else
 				{

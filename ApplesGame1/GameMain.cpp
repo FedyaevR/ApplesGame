@@ -15,7 +15,7 @@ int main()
 	srand(seed);
 
 	// Init window
-	sf::RenderWindow window(sf::VideoMode(ApplesGame::SCREEN_WIDTH, ApplesGame::SCREEN_HEGHT), "AppleGame");
+	sf::RenderWindow window(sf::VideoMode(ApplesGame::SCREEN_WIDTH, ApplesGame::SCREEN_HEIGHT), "AppleGame");
 
 	// We now use too much memory for stack, so we need to allocate it on heap
 	ApplesGame::Game* game = new ApplesGame::Game();
@@ -42,7 +42,7 @@ int main()
 		if (UpdateGame(*game, timeDelta))
 		{
 			// Draw everything here
-		// Clear the window first
+			// Clear the window first
 			window.clear();
 
 			DrawGame(*game, window);

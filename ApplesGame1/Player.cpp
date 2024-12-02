@@ -10,7 +10,7 @@ namespace ApplesGame
 	{
 		// Init player state
 		player.position.x = (float)SCREEN_WIDTH / 2.f;
-		player.position.y = (float)SCREEN_HEGHT / 2.f;
+		player.position.y = (float)SCREEN_HEIGHT / 2.f;
 		player.speed = INITIAL_SPEED;
 		player.direction = PlayerDirection::Up;
 
@@ -50,7 +50,7 @@ namespace ApplesGame
 
 	bool HasPlayerCollisionWithScreenBorder(const Player& player)
 	{
-		return !IsPointInRect(player.position, { 0.f, 0.f }, { (float)SCREEN_WIDTH, (float)SCREEN_HEGHT } );
+		return !IsPointInRect(player.position, { 0.f, 0.f }, { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT } );
 	}
 
 	void DrawPlayer(Player& player, sf::RenderWindow& window)

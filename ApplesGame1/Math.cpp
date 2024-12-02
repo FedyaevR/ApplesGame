@@ -1,4 +1,5 @@
 #include "Math.h"
+#include <iostream>
 
 namespace ApplesGame
 {
@@ -92,8 +93,6 @@ namespace ApplesGame
 			{
 				currentPos.y += itemRect.height + spacing;
 			}
-
-			
 		}
 	}
 

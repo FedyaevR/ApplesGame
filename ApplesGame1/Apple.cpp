@@ -34,7 +34,7 @@ namespace ApplesGame
 	{
 		// init apple state
 		apple.position.x = (float)(rand() % SCREEN_WIDTH);
-		apple.position.y = (float)(rand() % SCREEN_HEGHT);
+		apple.position.y = (float)(rand() % SCREEN_HEIGHT);
 		apple.isEaten = false;
 	}
 

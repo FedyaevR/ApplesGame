@@ -17,6 +17,7 @@ namespace ApplesGame
 		MenuItem exitGameItem;
 		MenuItem yesItem;
 		MenuItem noItem;
+		MenuItem recordTableShowItem;
 		Menu menu;
 	};
 

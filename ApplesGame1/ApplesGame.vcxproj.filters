@@ -72,5 +72,8 @@
     <ClInclude Include="Menu.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="GameStateStatTable.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
