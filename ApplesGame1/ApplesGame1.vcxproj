@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{78395798-71DC-4E4F-9D6A-8EF6D743F030}</ProjectGuid>
+    <ProjectGuid>{270B7A37-1756-411C-ACFD-AC334282C171}</ProjectGuid>
     <RootNamespace>ApplesGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>ApplesGame</ProjectName>
@@ -161,24 +161,30 @@
     <ClCompile Include="Apple.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameMain.cpp" />
-    <ClCompile Include="GameSettings.cpp" />
     <ClCompile Include="GameStat.cpp" />
+    <ClCompile Include="GameStateExitDialog.cpp" />
+    <ClCompile Include="GameStateGameOver.cpp" />
+    <ClCompile Include="GameStateMainMenu.cpp" />
+    <ClCompile Include="GameStatePlaying.cpp" />
+    <ClCompile Include="GameStateStatTable.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Stone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Apple.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameSettings.h" />
     <ClInclude Include="GameStat.h" />
+    <ClInclude Include="GameStateExitDialog.h" />
+    <ClInclude Include="GameStateGameOver.h" />
+    <ClInclude Include="GameStateMainMenu.h" />
+    <ClInclude Include="GameStatePlaying.h" />
+    <ClInclude Include="GameStateStatTable.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Stone.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ApplesGame.rc" />
+    <ClInclude Include="PlayingState.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
